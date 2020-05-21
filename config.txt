@@ -1,4 +1,3 @@
-C:\Users\Giuseppe\Desktop\bookkeeper
-https://github.com/apache/bookkeeper.git
-bookkeeper
-file
+C:\Users\Giuseppe\Desktop\avro
+https://github.com/apache/avro.git
+avro

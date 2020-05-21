@@ -80,7 +80,6 @@
     </target>
     <target name="Main">
         <java classname="project_package.Main" failonerror="true" fork="yes">
-            <arg line="file"/>
             <classpath refid="run.Main.classpath"/>
         </java>
     </target>

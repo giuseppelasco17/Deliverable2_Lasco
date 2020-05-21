@@ -1,12 +1,7 @@
 package project_package;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 public class CSVEntry {
-	
+
 	private Integer version;
 	private String fileName;
 	private Double locAdded = Double.valueOf(0);
@@ -20,31 +15,31 @@ public class CSVEntry {
 	private Double maxChgSet = Double.valueOf(0);
 	private Double avgChgSet = Double.valueOf(0);
 	private String buggy = "NO";
-	
+
 	public Integer getVersion() {
 		return version;
 	}
-	
+
 	public void setVersion(Integer version) {
 		this.version = version;
 	}
-	
+
 	public String getFileName() {
 		return fileName;
 	}
-	
+
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
-	
+
 	public String getBuggy() {
 		return buggy;
 	}
-	
+
 	public void setBuggy(String buggy) {
 		this.buggy = buggy;
 	}
-	
+
 	public Double getLocAdded() {
 		return locAdded;
 	}
@@ -63,7 +58,7 @@ public class CSVEntry {
 
 	public void setAvgLocAdded(Double avgLocAdded) {
 		this.avgLocAdded = avgLocAdded;
-		
+
 	}
 
 	public void setLocAdded(Double locAdded) {
@@ -125,37 +120,36 @@ public class CSVEntry {
 	public void setMaxChgSet(Double maxChgSet) {
 		this.maxChgSet = maxChgSet;
 	}
-	
-	public static void main(String[] args) {
-		List<CSVEntry> l = new ArrayList<>();
-		CSVEntry a = new CSVEntry();
-		a.setVersion(12);
-		CSVEntry b = new CSVEntry();
-		b.setVersion(1);
-		CSVEntry c = new CSVEntry();
-		c.setVersion(2);
-		CSVEntry d = new CSVEntry();
-		d.setVersion(1);
-		CSVEntry e = new CSVEntry();
-		e.setVersion(2);
-		l.add(a);
-		l.add(b);
-		l.add(c);
-		l.add(d);
-		l.add(e);
-		for(CSVEntry i : l) {
-			System.out.println(i.getVersion());
-		}
-		Collections.sort(l, new Comparator<CSVEntry>() {
-		    @Override
-		    public int compare(CSVEntry o1, CSVEntry o2) {
-		        return o1.getVersion().compareTo(o2.getVersion());
-		    }
-		});
-		System.out.println("Sorted");
-		for(CSVEntry i : l) {
-			System.out.println(i.getVersion());
-		}
-	}
-}
 
+//	public static void main(String[] args) {
+//		List<CSVEntry> l = new ArrayList<>();
+//		CSVEntry a = new CSVEntry();
+//		a.setVersion(12);
+//		CSVEntry b = new CSVEntry();
+//		b.setVersion(1);
+//		CSVEntry c = new CSVEntry();
+//		c.setVersion(2);
+//		CSVEntry d = new CSVEntry();
+//		d.setVersion(1);
+//		CSVEntry e = new CSVEntry();
+//		e.setVersion(2);
+//		l.add(a);
+//		l.add(b);
+//		l.add(c);
+//		l.add(d);
+//		l.add(e);
+//		for(CSVEntry i : l) {
+//			System.out.println(i.getVersion());
+//		}
+//		Collections.sort(l, new Comparator<CSVEntry>() {
+//		    @Override
+//		    public int compare(CSVEntry o1, CSVEntry o2) {
+//		        return o1.getVersion().compareTo(o2.getVersion());
+//		    }
+//		});
+//		System.out.println("Sorted");
+//		for(CSVEntry i : l) {
+//			System.out.println(i.getVersion());
+//		}
+//	}
+}
