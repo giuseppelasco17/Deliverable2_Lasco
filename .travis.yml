@@ -2,6 +2,10 @@ language: java
 jdk:
     - openjdk13
 
-
+addons:
+    sonarcloud:
+        organization: giuseppelasco17
+        token: 580164cc4820388a9637b2983b6d069df023ecdd
 script:
     - ant build
+    - sonar-scanner
