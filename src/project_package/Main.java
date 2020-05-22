@@ -5,9 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.TreeMap;
+import java.util.SortedMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
@@ -107,34 +106,41 @@ public class Main {
 	private void addInfoToFileList(List<Ticket> tckList, List<File> allFiles) {
 		for (Ticket tkt : tckList) {
 			try {
-				List<String> commits = GitQuery.GetInstance().listCommits(tkt.getKey());
+				List<String> commits = GitQuery.getInstance().listCommits(tkt.getKey());//closed tickets referred to some commits
 				for (String commit : commits) {
-					List<String> files = GitQuery.GetInstance().listFiles(commit);
-					for (String file : files) {// files referred to a ticket
-						for (File allFile : allFiles) {// map AV on file in allFiles list
-							if (allFile.getFileName().equals(file)) {// searching the matching between files referred to
-																		// a ticket and files in allFiles list
-								allFile.setInjVersion(tkt.getInjVersion());
-								allFile.setLastAv(tkt.getLastAv());
-								break;
-							}
-						}
-
-					}
+					List<String> files = GitQuery.getInstance().listFiles(commit);//files changed in this commit
+					iterateFilesAndAddInfo(files, allFiles, tkt);
 				}
 			} catch (InstantiationException e) {
 				logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
 			}
 		}
 	}
+	
+	private void iterateFilesAndAddInfo(List<String> files, List<File> allFiles, Ticket tkt) {
+		for (String file : files) {// files referred to a ticket
+			for (File allFile : allFiles) {// map AV on file in allFiles list
+				if (allFile.getFileName().equals(file)) {// searching the matching between files referred to
+															// a ticket and files in allFiles list
+					allFile.setInjVersion(tkt.getInjVersion());
+					allFile.setLastAv(tkt.getLastAv());
+					break;
+				}
+			}
+
+		}
+	}
 
 	private List<File> retrieveAllFiles() {
 		List<File> fileList = new ArrayList<>();
 		try {
-			List<ProjFile> pFiles = GitQuery.GetInstance().listAllFiles();
+			List<ProjFile> pFiles = GitQuery.getInstance().listAllFiles();
 			for (ProjFile pFile : pFiles) {
-				int addVersion, remVersion;
-				String addDate, remDate, file;
+				int addVersion;
+				int remVersion;
+				String addDate;
+				String remDate;
+				String file;
 				addDate = pFile.getAddDate();
 				remDate = pFile.getRemDate();
 				file = pFile.getFileName();
@@ -174,13 +180,7 @@ public class Main {
 			int lastAV = file.getLastAv();
 			String fileName = file.getFileName();
 			for (int i = addV; i <= remV; i++) {
-				if (injV == -1 && lastAV == -1) {// class is never buggy
-					CSVEntry entry = new CSVEntry();
-					entry.setBuggy(no);
-					entry.setFileName(fileName);
-					entry.setVersion((Integer) i);
-					csvEntryList.add(entry);
-				} else if (i >= Math.max(addV, injV) && i <= Math.min(remV, lastAV)) {// class is buggy range(IV, FV-1)
+				if (!(injV == -1 && lastAV == -1) && i >= Math.max(addV, injV) && i <= Math.min(remV, lastAV)) {// class is never buggy
 					CSVEntry entry = new CSVEntry();
 					entry.setBuggy(yes);
 					entry.setFileName(fileName);
@@ -195,12 +195,7 @@ public class Main {
 				}
 			}
 		}
-		Collections.sort(csvEntryList, new Comparator<CSVEntry>() {
-			@Override
-			public int compare(CSVEntry o1, CSVEntry o2) {
-				return o1.getVersion().compareTo(o2.getVersion());
-			}
-		});
+		Collections.sort(csvEntryList, (CSVEntry o1, CSVEntry o2) -> o1.getVersion().compareTo(o2.getVersion()));
 		return csvEntryList;
 	}
 
@@ -226,12 +221,7 @@ public class Main {
 				entryList.add(metricsEntry);
 			}
 		}
-		Collections.sort(entryList, new Comparator<CSVEntry>() {
-			@Override
-			public int compare(CSVEntry o1, CSVEntry o2) {
-				return o1.getVersion().compareTo(o2.getVersion());
-			}
-		});
+		Collections.sort(entryList, (CSVEntry o1, CSVEntry o2) -> o1.getVersion().compareTo(o2.getVersion()));
 	}
 
 	public static void main(String[] args) {
@@ -244,20 +234,20 @@ public class Main {
 		Main main = new Main();
 		main.loadPath();
 		String retrMode = main.getRetrMode();
-		if (retrMode != null) {// if retrMode is null the file list is computed using git CLI, else it uses the
-								// cache file
-			if (!retrMode.equals("file")) {
-				logger.log(Level.SEVERE, "Insert 'file' or nothing in config.txt");
-				return;
-			}
+		if (retrMode != null && !retrMode.equals("file")) {// if retrMode is null the file list is computed using git CLI, else it uses the
+			logger.log(Level.SEVERE, "Insert 'file' or nothing in config.txt");// cache file
+			return;				
 		}
 		RetrieveTickets rtvTkt = new RetrieveTickets();
 
 		GitQuery gitQuery = null;
 		try {
-			gitQuery = GitQuery.Create(main.getPath(), main.getSubPath(), main.getRepository(), retrMode);
+			gitQuery = GitQuery.create(main.getPath(), main.getSubPath(), main.getRepository(), retrMode);
 		} catch (InstantiationException e1) {
 			logger.log(Level.SEVERE, EXCEPTION_THROWN, e1);
+		}
+		if(gitQuery == null) {
+			throw new NullPointerException();
 		}
 		gitQuery.gitClone();
 		gitQuery.gitPull();
@@ -285,7 +275,7 @@ public class Main {
 		main.addInfoToFileList(ticketList, fileList);
 		List<CSVEntry> entryList = main.createCSVEntryList(fileList);
 		// compute the metrics
-		TreeMap<Integer, List<String>> versionCommitsMap = Metrics
+		SortedMap<Integer, List<String>> versionCommitsMap = Metrics
 				.listAllCommitsPerVersion(main.getSubPath().toUpperCase());
 		List<CSVEntry> metricsEntryList = Metrics.computeMetrics(versionCommitsMap);
 		// merge with metrics

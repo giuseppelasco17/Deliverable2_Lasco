@@ -42,7 +42,7 @@ public class Proportion {
 	}
 
 	public void calcProportion(int fixV, int openV, int injV) {
-		int newProp = (int) ((fixV - injV) / (fixV - openV));
+		int newProp =  ((fixV - injV) / (fixV - openV));
 		n++;
 		if (n == 1) {
 			prop = newProp;

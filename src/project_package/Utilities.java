@@ -20,23 +20,32 @@ public class Utilities {
 	
 	private static final String EXCEPTION_THROWN = "an exception was thrown";
 	
+	private static final String DATE_FORMAT = "yyyy-MM-dd";
+	
+	private static final String VERSION_INFO = "VersionInfo.csv";
+	
+	private Utilities() {
+	    throw new IllegalStateException("Utility class");
+	  }
+	
 	public static String calcMidDate(String firstDate, String lastDate) {
 		Date startdate = null;
 		Date enddate = null;
+		Date middate = null;
 		try {
-			startdate = new SimpleDateFormat("yyyy-MM-dd").parse(firstDate);
-			enddate = new SimpleDateFormat("yyyy-MM-dd").parse(lastDate);
+			startdate = new SimpleDateFormat(DATE_FORMAT).parse(firstDate);
+			enddate = new SimpleDateFormat(DATE_FORMAT).parse(lastDate);
+			middate = new Date((startdate.getTime() + enddate.getTime()) / 2);
 		} catch (ParseException e) {
 			logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
 		}
-		Date middate = new Date((startdate.getTime() + enddate.getTime()) / 2);
-		return new SimpleDateFormat("yyyy-MM-dd").format(middate);
+		return new SimpleDateFormat(DATE_FORMAT).format(middate);
 	}
 
-	public static int getIdVersionFromDate(String projName, String _date) {
+	public static int getIdVersionFromDate(String projName, String stringDate) {
 		Date date = null;
 		try {
-			date = new SimpleDateFormat("yyyy-MM-dd").parse(_date);
+			date = new SimpleDateFormat(DATE_FORMAT).parse(stringDate);
 		} catch (ParseException e1) {
 			logger.log(Level.SEVERE, EXCEPTION_THROWN, e1);
 		}
@@ -44,26 +53,34 @@ public class Utilities {
 		String nextLine = null;
 		String[] nextRecord = null;
 		String[] prevRecord = null;
-		try (FileReader f = new FileReader(projName + "VersionInfo.csv");
+		try (FileReader f = new FileReader(projName + VERSION_INFO);
 				BufferedReader buff = new BufferedReader(f);) {
 			// Reading Records One by One in a String array
 
-			buff.readLine();
+			nextLine = buff.readLine();
 			while ((nextLine = buff.readLine()) != null) {
 				nextRecord = nextLine.split(",");
-				prevDate = new SimpleDateFormat("yyyy-MM-dd").parse(nextRecord[3]);
-				if (date.before(prevDate) && prevRecord != null) {
-					return Integer.parseInt(prevRecord[0]);
+				prevDate = new SimpleDateFormat(DATE_FORMAT).parse(nextRecord[3]);
+				if (date != null) {
+					if (date.before(prevDate) && prevRecord != null) {
+						return Integer.parseInt(prevRecord[0]);
+					}
+					if (date.before(prevDate) && prevRecord == null) {
+						return -1;
+					}
+					prevRecord = nextRecord.clone();
+				}else {
+					throw new NullPointerException();
 				}
-				if (date.before(prevDate) && prevRecord == null) {
-					return -1;
-				}
-				prevRecord = nextRecord.clone();
 			}
 		} catch (IOException | ParseException e) {
 			logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
 		}
-		return Integer.parseInt(prevRecord[0]);
+		int id = -1; 
+		if(prevRecord != null) {
+			id = Integer.parseInt(prevRecord[0]);
+		}
+		return id;
 	}
 
 	public static int getIdVersionFromVersion(String projName, String fixVersion) {
@@ -73,19 +90,19 @@ public class Utilities {
 		String[] nextRecord = null;
         String[] prevRecord = null;
 		try (
-				FileReader f = new FileReader(projName + "VersionInfo.csv");
+				FileReader f = new FileReader(projName + VERSION_INFO);
 				BufferedReader buff = new BufferedReader(f);
 	        ) {
 	            // Reading Records One by One in a String array
 
-	            buff.readLine();
+	            nextLine = buff.readLine();
 	            while ((nextLine = buff.readLine()) != null) {
 	            	nextRecord = nextLine.split(",");
 	            	prevV = Integer.parseInt(nextRecord[2].replaceAll("\\p{Punct}", ""));
 	            	if (intFixV < prevV && prevRecord != null) {
 	            		return Integer.parseInt(prevRecord[0]);
 	            	}
-	            	if (intFixV < prevV && prevRecord == null){
+	            	if (intFixV < prevV){
 	            		return -1;
 	            	}
 	            	prevRecord = nextRecord.clone();
@@ -93,13 +110,17 @@ public class Utilities {
 			} catch (IOException e) {
 				logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
 			}
-		return Integer.parseInt(prevRecord[0]);
+		int id = -1; 
+		if(prevRecord != null) {
+			id = Integer.parseInt(prevRecord[0]);
+		}
+		return id;
 	}
 	
 	public static int getLastVersion(String projName) {
 		String[] nextRecord = null;
 		String nextLine = null;
-		try (FileReader f = new FileReader(projName + "VersionInfo.csv");
+		try (FileReader f = new FileReader(projName + VERSION_INFO);
 				BufferedReader buff = new BufferedReader(f);) {
 			// Reading Records One by One in a String array
 			while ((nextLine = buff.readLine()) != null) {
@@ -108,15 +129,19 @@ public class Utilities {
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
 		}
-		return Integer.parseInt(nextRecord[0]);
+		int id = -1; 
+		if(nextRecord != null) {
+			id = Integer.parseInt(nextRecord[0]);
+		}
+		return id;
 	}
 
 	public static void buildCsv(List<CSVEntry> entryList, String projName) {
-		FileWriter fileWriter = null;
-		try {
-			String outname = projName + "Dataset.csv";
+		String outname = projName + "Dataset.csv";
+		try (
+			
 			// Name of CSV for output
-			fileWriter = new FileWriter(outname);
+				FileWriter fileWriter = new FileWriter(outname)){
 			fileWriter.append("Version,File Name,LOC_added,MAX_LOC_added,AVG_LOC_added,Churn,MAX_Churn,"
 					+ "AVG_Churn,NR,ChgSetSize,MAX_ChgSet,AVG_ChgSet,Buggy");
 			fileWriter.append("\n");
@@ -151,13 +176,6 @@ public class Utilities {
 
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
-		} finally {
-			try {
-				fileWriter.flush();
-				fileWriter.close();
-			} catch (IOException e) {
-				logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
-			}
 		}
 	}
 

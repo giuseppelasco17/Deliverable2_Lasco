@@ -20,6 +20,8 @@ public class GitQuery {// Singleton
 	private static final String CMD = "git -C ";
 
 	private static final String EXCEPTION_THROWN = "an exception was thrown";
+	
+	private static final String PATH_DEL = "\\";
 
 	static Logger logger = Logger.getAnonymousLogger();
 
@@ -38,13 +40,13 @@ public class GitQuery {// Singleton
 		this.retrMode = retrMode;
 	}
 
-	public static GitQuery GetInstance() throws InstantiationException {
+	public static GitQuery getInstance() throws InstantiationException {
 		if (instance == null)
 			throw new InstantiationException("GitQuery instance not created !");
 		return instance;
 	}
 
-	public static GitQuery Create(String path, String subPath, String repository, String retrMode)
+	public static GitQuery create(String path, String subPath, String repository, String retrMode)
 			throws InstantiationException {
 		if (instance != null)
 			throw new InstantiationException("GitQuery instance already created !");
@@ -57,7 +59,7 @@ public class GitQuery {// Singleton
 		String tkt = null;
 		try {
 			// First line represent the last commit date related to the ticket
-			String pathComplete = this.path + "\\" + this.subPath;
+			String pathComplete = this.path + PATH_DEL + this.subPath;
 			Process p = Runtime.getRuntime()
 					.exec(CMD + pathComplete + " log -1 --pretty=format:\"%cs\" --grep=" + ticket);
 			p.waitFor();
@@ -76,10 +78,9 @@ public class GitQuery {// Singleton
 		List<String> tktList = new ArrayList<>();
 		try {
 			// First line represent the last commit date related to the ticket
-			String pathComplete = this.path + "\\" + this.subPath;
+			String pathComplete = this.path + PATH_DEL + this.subPath;
 			Process p = Runtime.getRuntime()
 					.exec(CMD + pathComplete + " --no-pager log --pretty=format:\"%H\" --grep=" + key);
-			// p.waitFor();
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String line;
 			while ((line = stdInput.readLine()) != null) {
@@ -99,10 +100,9 @@ public class GitQuery {// Singleton
 		List<String> fileList = new ArrayList<>();
 		try {
 			// First line represent the last commit date related to the ticket
-			String pathComplete = this.path + "\\" + this.subPath;
+			String pathComplete = this.path + PATH_DEL + this.subPath;
 			Process p = Runtime.getRuntime().exec(
 					CMD + pathComplete + " --no-pager diff-tree --no-commit-id --name-only -r " + commit + " *.java");
-			// p.waitFor();
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String line;
 			while ((line = stdInput.readLine()) != null) {
@@ -110,6 +110,7 @@ public class GitQuery {// Singleton
 			}
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
+			
 			// Restore interrupted state...
 			Thread.currentThread().interrupt();
 			System.exit(-1);
@@ -121,73 +122,79 @@ public class GitQuery {// Singleton
 		List<ProjFile> fileList = new ArrayList<>();
 		if (retrMode == null) {// while retrieving from git, it builds the file
 			File file = new File(this.subPath.toUpperCase() + "Files.csv");
-			PrintWriter buff = null;
 			List<String> rawFiles = new ArrayList<>();
 			try {
-				file.createNewFile();
-				buff = new PrintWriter(new FileWriter(file));
+				if (!file.createNewFile()) {
+					logger.info("file exist");
+				}
+			} catch (IOException e1) {
+				logger.log(Level.SEVERE, EXCEPTION_THROWN, e1);
+			}
+			try (PrintWriter buff = new PrintWriter(new FileWriter(file))) {
 				// First line represent the last commit date related to the ticket
-				String pathComplete = this.path + "\\" + this.subPath;
+				String pathComplete = this.path + PATH_DEL + this.subPath;
 				Process p = Runtime.getRuntime()
 						.exec(CMD + pathComplete + " --no-pager log --pretty=format:\"\" --name-only *.java");
-				// p.waitFor();
 				BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-				String line, addDate, remDate;
+				String line;
+				
 				String prevLine = "";
 				while ((line = stdInput.readLine()) != null || prevLine != null) {
 					if (line != null && !line.equals(""))
 						rawFiles.add(line);
 					prevLine = line;
 				}
-				List<String> filteredFiles = new ArrayList<String>(new LinkedHashSet<String>(rawFiles));// remove the
+				List<String> filteredFiles = new ArrayList<>(new LinkedHashSet<String>(rawFiles));// remove the
 																										// duplicated
 																										// lines
-				for (String filtLine : filteredFiles) {// TODO: considerare solo i file che stanno nella prima metà
-														// (forse più avanti)
-					if ((addDate = retrieveDate(filtLine, "A")) == null)// if addDate does not exist
-						addDate = "-1";// useful when the reading is from file
-					if ((remDate = retrieveDate(filtLine, "D")) == null)// if remDate does not exist
-						remDate = "-1";
-					ProjFile projFile = new ProjFile(filtLine, addDate, remDate);
-					fileList.add(projFile);
-					buff.println(filtLine + "," + addDate + "," + remDate);
-				}
-				buff.close();
+				addDatesAndPrintOnFile(filteredFiles, fileList, buff);
 			} catch (IOException e) {
 				logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
 				// Restore interrupted state...
 				Thread.currentThread().interrupt();
 				System.exit(-1);
-			}
+			} 
 		} else {// if the reading is from file
-			FileReader f;
-			try {
-				f = new FileReader(this.subPath.toUpperCase() + "Files.csv");
-				BufferedReader buff = new BufferedReader(f);
-				String line;
-				String[] fileByLine;
-				while ((line = buff.readLine()) != null) {
-					fileByLine = line.split(",");
-					ProjFile projFile = new ProjFile(fileByLine[0], fileByLine[1], fileByLine[2]);
-					fileList.add(projFile);
-				}
-				buff.close();
-			} catch (IOException e) {
-				logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
-			}
-
+			readFromFile(fileList);
 		}
 		return fileList;
+	}
+	
+	private void readFromFile(List<ProjFile> fileList) {
+		try (BufferedReader buff = new BufferedReader(new FileReader(this.subPath.toUpperCase() + "Files.csv"))) {
+			String line;
+			String[] fileByLine;
+			while ((line = buff.readLine()) != null) {
+				fileByLine = line.split(",");
+				ProjFile projFile = new ProjFile(fileByLine[0], fileByLine[1], fileByLine[2]);
+				fileList.add(projFile);
+			}
+		} catch (IOException e) {
+			logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
+		} 
+	}
+
+	private void addDatesAndPrintOnFile(List<String> filteredFiles, List<ProjFile> fileList, PrintWriter buff) {
+		for (String filtLine : filteredFiles) {
+			String addDate;
+			String remDate;
+			if ((addDate = retrieveDate(filtLine, "A")) == null)// if addDate does not exist
+				addDate = "-1";// useful when the reading is from file
+			if ((remDate = retrieveDate(filtLine, "D")) == null)// if remDate does not exist
+				remDate = "-1";
+			ProjFile projFile = new ProjFile(filtLine, addDate, remDate);
+			fileList.add(projFile);
+			buff.println(filtLine + "," + addDate + "," + remDate);
+		}
 	}
 
 	public String retrieveDate(String file, String type) {
 		String date = null;
 		try {
 			// First line represent the last commit date related to the ticket
-			String pathComplete = this.path + "\\" + this.subPath;
+			String pathComplete = this.path + PATH_DEL + this.subPath;
 			Process p = Runtime.getRuntime()
 					.exec(CMD + pathComplete + " log --diff-filter=" + type + " --pretty=format:\"%as\" -- " + file);
-			// p.waitFor();
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			date = stdInput.readLine();
 		} catch (IOException e) {
@@ -203,7 +210,7 @@ public class GitQuery {// Singleton
 		String date = null;
 		try {
 			// First line represent the first commit date
-			String pathComplete = this.path + "\\" + this.subPath;
+			String pathComplete = this.path + PATH_DEL + this.subPath;
 			Process p = Runtime.getRuntime().exec(CMD + pathComplete + " log --reverse --pretty=format:%cs");
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			date = stdInput.readLine();
@@ -220,10 +227,9 @@ public class GitQuery {// Singleton
 		List<String> commitList = new ArrayList<>();
 		try {
 			// First line represent the last commit date related to the ticket
-			String pathComplete = this.path + "\\" + this.subPath;
+			String pathComplete = this.path + PATH_DEL + this.subPath;
 			Process p = Runtime.getRuntime()
 					.exec(CMD + pathComplete + " --no-pager log --pretty=format:\"%cs,%H\" --reverse");
-			// p.waitFor();
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String line;
 			while ((line = stdInput.readLine()) != null) {
@@ -242,10 +248,9 @@ public class GitQuery {// Singleton
 		List<String> filesPlusAttrList = new ArrayList<>();
 		try {
 			// First line represent the last commit date related to the ticket
-			String pathComplete = this.path + "\\" + this.subPath;
+			String pathComplete = this.path + PATH_DEL + this.subPath;
 			Process p = Runtime.getRuntime().exec(
 					CMD + pathComplete + " --no-pager diff --numstat " + commitBefore + " " + commitAfter + " *.java");
-			// p.waitFor();
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String line;
 			while ((line = stdInput.readLine()) != null) {
@@ -264,7 +269,7 @@ public class GitQuery {// Singleton
 		String date = null;
 		try {
 			// First line represent the last commit date
-			String pathComplete = this.path + "\\" + this.subPath;
+			String pathComplete = this.path + PATH_DEL + this.subPath;
 			Process p = Runtime.getRuntime().exec(CMD + pathComplete + " log --pretty=format:%cs -1");
 			p.waitFor();
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));

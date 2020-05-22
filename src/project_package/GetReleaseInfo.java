@@ -6,36 +6,45 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.Collections;
-import java.util.Comparator;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
 public class GetReleaseInfo {
 
-	public static HashMap<LocalDateTime, String> releaseNames;
-	public static HashMap<LocalDateTime, String> releaseID;
-	public static ArrayList<LocalDateTime> releases;
-	public static Integer numVersions;
+	protected static Map<LocalDateTime, String> releaseNames;
+	protected static Map<LocalDateTime, String> releaseID;
+	protected static List<LocalDateTime> releases;
+	protected static Integer numVersions;
 
-	public static void getRelease(String projName) throws IOException, JSONException {
+	private static final String EXCEPTION_THROWN = "an exception was thrown";
+	private static final Logger logger = Logger.getAnonymousLogger();
+	
+	private GetReleaseInfo() {
+	    throw new IllegalStateException("GetReleaseInfo class");
+	  }
+	
+	public static void getRelease(String projName) throws IOException {
 
 		// Fills the arraylist with releases dates and orders them
 		// Ignores releases with missing dates
-		releases = new ArrayList<LocalDateTime>();
+		releases = new ArrayList<>();
 		Integer i;
 		String url = "https://issues.apache.org/jira/rest/api/2/project/" + projName;
 		JSONObject json = readJsonFromUrl(url);
 		JSONArray versions = json.getJSONArray("versions");
-		releaseNames = new HashMap<LocalDateTime, String>();
-		releaseID = new HashMap<LocalDateTime, String>();
+		releaseNames = new HashMap<>();
+		releaseID = new HashMap<>();
 		for (i = 0; i < versions.length(); i++) {
 			String name = "";
 			String id = "";
@@ -48,20 +57,13 @@ public class GetReleaseInfo {
 			}
 		}
 		// order releases by date
-		Collections.sort(releases, new Comparator<LocalDateTime>() {
-			// @Override
-			public int compare(LocalDateTime o1, LocalDateTime o2) {
-				return o1.compareTo(o2);
-			}
-		});
+		Collections.sort(releases, (LocalDateTime o1, LocalDateTime o2) -> o1.compareTo(o2));
 		if (releases.size() < 6)
 			return;
-		FileWriter fileWriter = null;
-		try {
-			fileWriter = null;
-			String outname = projName + "VersionInfo.csv";
-			// Name of CSV for output
-			fileWriter = new FileWriter(outname);
+		
+		String outname = projName + "VersionInfo.csv";
+		// Name of CSV for output
+		try (FileWriter fileWriter = new FileWriter(outname)) {
 			fileWriter.append("Index,Version ID,Version Name,Date");
 			fileWriter.append("\n");
 			numVersions = releases.size();
@@ -76,20 +78,10 @@ public class GetReleaseInfo {
 				fileWriter.append(releases.get(i).toString().substring(0, 10));
 				fileWriter.append("\n");
 			}
-
+			fileWriter.flush();
 		} catch (Exception e) {
-			System.out.println("Error in csv writer");
-			e.printStackTrace();
-		} finally {
-			try {
-				fileWriter.flush();
-				fileWriter.close();
-			} catch (IOException e) {
-				System.out.println("Error while flushing/closing fileWriter !!!");
-				e.printStackTrace();
-			}
+			logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
 		}
-		return;
 	}
 
 	public static void addRelease(String strDate, String name, String id) {
@@ -99,16 +91,13 @@ public class GetReleaseInfo {
 			releases.add(dateTime);
 		releaseNames.put(dateTime, name);
 		releaseID.put(dateTime, id);
-		return;
 	}
 
-	public static JSONObject readJsonFromUrl(String url) throws IOException, JSONException {
+	public static JSONObject readJsonFromUrl(String url) throws IOException {
 		InputStream is = new URL(url).openStream();
-		try {
-			BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
+		try (BufferedReader rd = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
 			String jsonText = readAll(rd);
-			JSONObject json = new JSONObject(jsonText);
-			return json;
+			return new JSONObject(jsonText);
 		} finally {
 			is.close();
 		}
