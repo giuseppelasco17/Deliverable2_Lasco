@@ -1,1 +1,2 @@
-# Milestone1_D2Lasco
+# Deliverable2_Lasco
+*The program analyzes the evolution of Apache open source projects with the purpose of understand which java classes is buggy in a certain version and to predict which classes are more inclined to be buggy in the future. The application build a dataset with metrics calculated using git api and jira rest api; the dataset is used as input of weka api with the purpose of evaluate which combination of feature selection, balancing and classifier is better to be used to predict which classes is probably buggy in the future.
