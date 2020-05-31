@@ -221,6 +221,9 @@ public class SecondMileController {
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
 		}
+		if (evaluation == null) {
+			throw new InvalidWekaTecniqueException("Evaluation is null");
+		}
 		return setEntry(k, training, testing, samTecnique, fSTecnique, classifier, evaluation);// TODO: ha
 																											// senso
 																											// computare
