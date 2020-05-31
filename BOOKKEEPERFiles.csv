@@ -1,5 +1,4 @@
 bookkeeper-server/src/main/java/org/apache/bookkeeper/bookie/storage/ldb/SingleDirectoryDbLedgerStorage.java,2018-04-08,-1
-,2020-03-18,2020-03-07
 bookkeeper-server/src/main/java/org/apache/bookkeeper/conf/ServerConfiguration.java,2011-11-18,-1
 bookkeeper-server/src/main/java/org/apache/bookkeeper/proto/BookieProtoEncoding.java,2013-02-12,-1
 bookkeeper-server/src/main/java/org/apache/bookkeeper/proto/PerChannelBookieClient.java,2011-03-31,-1

@@ -3,34 +3,28 @@
               Any modifications will be overwritten.
               To include a user specific buildfile here, simply create one in the same
               directory with the processing instruction <?eclipse.ant.import?>
-              as the first entry and export the buildfile again. --><project basedir="." default="build" name="Milestone1_D2_Lasco">
+              as the first entry and export the buildfile again. --><project basedir="." default="build" name="Deliverable2_Lasco">
     <property environment="env"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="13"/>
     <property name="source" value="13"/>
-    <path id="Milestone1_D2_Lasco.classpath">
+    <path id="Deliverable2_Lasco.classpath">
         <pathelement location="bin"/>
-        <pathelement location="src/project_package/json-20190722.jar"/>
+        <pathelement location="json-20190722.jar"/>
+        <pathelement location="SMOTE.jar"/>
+        <pathelement location="weka.jar"/>
     </path>
-    <path id="run.CSVEntry.classpath">
-        <path refid="Milestone1_D2_Lasco.classpath"/>
-        <pathelement location="src/project_package/json-20190722.jar"/>
+    <path id="run.FirstMileController (1).classpath">
+        <path refid="Deliverable2_Lasco.classpath"/>
+        <pathelement location="json-20190722.jar"/>
+        <pathelement location="SMOTE.jar"/>
+        <pathelement location="weka.jar"/>
     </path>
-    <path id="run.GitQuery (1).classpath">
-        <path refid="Milestone1_D2_Lasco.classpath"/>
-        <pathelement location="src/project_package/json-20190722.jar"/>
-    </path>
-    <path id="run.Main.classpath">
-        <path refid="Milestone1_D2_Lasco.classpath"/>
-        <pathelement location="src/project_package/json-20190722.jar"/>
-    </path>
-    <path id="run.Metrics.classpath">
-        <path refid="Milestone1_D2_Lasco.classpath"/>
-        <pathelement location="src/project_package/json-20190722.jar"/>
-    </path>
-    <path id="run.Utilities (1).classpath">
-        <path refid="Milestone1_D2_Lasco.classpath"/>
-        <pathelement location="src/project_package/json-20190722.jar"/>
+    <path id="run.SecondMileController.classpath">
+        <path refid="Deliverable2_Lasco.classpath"/>
+        <pathelement location="json-20190722.jar"/>
+        <pathelement location="SMOTE.jar"/>
+        <pathelement location="weka.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
@@ -51,7 +45,7 @@
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" includeantruntime="false" source="${source}" target="${target}">
             <src path="src"/>
-            <classpath refid="Milestone1_D2_Lasco.classpath"/>
+            <classpath refid="Deliverable2_Lasco.classpath"/>
         </javac>
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
@@ -68,29 +62,14 @@
         <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
         <antcall target="build"/>
     </target>
-    <target name="CSVEntry">
-        <java classname="project_package.CSVEntry" failonerror="true" fork="yes">
-            <classpath refid="run.CSVEntry.classpath"/>
+    <target name="FirstMileController (1)">
+        <java classname="milestone_one.FirstMileController" failonerror="true" fork="yes">
+            <classpath refid="run.FirstMileController (1).classpath"/>
         </java>
     </target>
-    <target name="GitQuery (1)">
-        <java classname="project_package.GitQuery" failonerror="true" fork="yes">
-            <classpath refid="run.GitQuery (1).classpath"/>
-        </java>
-    </target>
-    <target name="Main">
-        <java classname="project_package.Main" failonerror="true" fork="yes">
-            <classpath refid="run.Main.classpath"/>
-        </java>
-    </target>
-    <target name="Metrics">
-        <java classname="project_package.Metrics" failonerror="true" fork="yes">
-            <classpath refid="run.Metrics.classpath"/>
-        </java>
-    </target>
-    <target name="Utilities (1)">
-        <java classname="project_package.Utilities" failonerror="true" fork="yes">
-            <classpath refid="run.Utilities (1).classpath"/>
+    <target name="SecondMileController">
+        <java classname="milestone_two.SecondMileController" failonerror="true" fork="yes">
+            <classpath refid="run.SecondMileController.classpath"/>
         </java>
     </target>
 </project>
