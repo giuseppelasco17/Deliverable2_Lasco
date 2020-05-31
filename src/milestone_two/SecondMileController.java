@@ -104,7 +104,7 @@ public class SecondMileController {
 	}
 
 	private ResultEntry runEvaluation(int k, String fSTecnique, String samTecnique, String classifier)
-			throws Exception {
+			throws InvalidWekaTecniqueException {
 		int beginTrain = 0;
 		int beginTest = versionIndexes.get(k + 1);
 		int trainAmount = beginTest;
@@ -135,17 +135,30 @@ public class SecondMileController {
 																								// occurrence * 2
 			sampler = new Resample();// sampling tecnique
 			String[] optsOver = new String[] { "-B", "1.0", "-Z", (String.valueOf(majorPerc))};
-			sampler.setOptions(optsOver);
-			sampler.setInputFormat(training);
+			try {
+				sampler.setOptions(optsOver);
+				sampler.setInputFormat(training);
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
+			}
+			
 			break;
 		case "undersampling":
 			sampler = new SpreadSubsample();
 			String[] opts = new String[] { "-M", "1.0" };
-			sampler.setOptions(opts);
+			try {
+				sampler.setOptions(opts);
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
+			}
 			break;
 		case "SMOTE":
 			sampler = new SMOTE();
-			sampler.setInputFormat(training);
+			try {
+				sampler.setInputFormat(training);
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
+			}
 			break;
 		default:
 			throw new InvalidWekaTecniqueException("Invalid balancing tecnique");
@@ -164,13 +177,17 @@ public class SecondMileController {
 			filter.setEvaluator(eval);
 			filter.setSearch(search);
 			// specify the dataset
-			filter.setInputFormat(training);
-			// apply
-			training = Filter.useFilter(training, filter);
-			int numAttrFiltered = training.numAttributes();
-			training.setClassIndex(numAttrFiltered - 1);
-			testing = Filter.useFilter(testing, filter);
-			testing.setClassIndex(numAttrFiltered - 1);
+			try {
+				filter.setInputFormat(training);
+				// apply
+				training = Filter.useFilter(training, filter);
+				int numAttrFiltered = training.numAttributes();
+				training.setClassIndex(numAttrFiltered - 1);
+				testing = Filter.useFilter(testing, filter);
+				testing.setClassIndex(numAttrFiltered - 1);
+			} catch (Exception e) {
+				logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
+			}
 			break;
 		case "noFeatureSel":
 			break;
@@ -196,9 +213,14 @@ public class SecondMileController {
 		}
 		if (sampler != null)
 			fc.setFilter(sampler);
-		fc.buildClassifier(training);
-		Evaluation evaluation = new Evaluation(testing);
-		evaluation.evaluateModel(fc, testing);
+		Evaluation evaluation = null;
+		try {
+			fc.buildClassifier(training);
+			evaluation = new Evaluation(testing);
+			evaluation.evaluateModel(fc, testing);
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
+		}
 		return setEntry(k, training, testing, samTecnique, fSTecnique, classifier, evaluation);// TODO: ha
 																											// senso
 																											// computare
