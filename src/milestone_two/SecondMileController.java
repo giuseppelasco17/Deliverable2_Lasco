@@ -229,12 +229,18 @@ public class SecondMileController {
 																											// sampling??
 	}
 
-	public List<ResultEntry> analyzeDataset() throws Exception {
+	public List<ResultEntry> analyzeDataset() throws InvalidWekaTecniqueException {
 		List<ResultEntry> resultEntries = new ArrayList<>();
 		selectProject();
 		Util.csvToArff(project.toUpperCase() + "Dataset.csv");
-		DataSource source = new DataSource(project.toUpperCase() + "Dataset.arff");
-		dataset = source.getDataSet();
+		DataSource source;
+		try {
+			source = new DataSource(project.toUpperCase() + "Dataset.arff");
+			dataset = source.getDataSet();
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
+		}
+		
 		// load the dataset
 		computeVersionIndexes(project.toUpperCase() + "Dataset.csv");
 		int numOfRuns = versionIndexes.size() - 3;
@@ -256,7 +262,7 @@ public class SecondMileController {
 		List<ResultEntry> resultEntries = null;
 		try {
 			resultEntries = secondMileController.analyzeDataset();
-		} catch (Exception e) {
+		} catch (InvalidWekaTecniqueException e) {
 			logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
 		}
 		Util.buildResultCsv(resultEntries, secondMileController.project);
