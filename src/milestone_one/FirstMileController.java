@@ -171,7 +171,7 @@ public class FirstMileController {
 
 	}
 
-	private List<CSVEntry> createCSVEntryList(List<FileWithInfo> fileList, FirstMileController main) {
+	private List<CSVEntry> createCSVEntryList(List<FileWithInfo> fileList, int midVersion) {
 		List<CSVEntry> csvEntryList = new ArrayList<>();
 		String no = "NO";
 		String yes = "YES";
@@ -181,7 +181,7 @@ public class FirstMileController {
 			int injV = file.getInjVersion();
 			int lastAV = file.getLastAv();
 			String fileName = file.getFileName();
-			for (int i = addV; i <= Math.min(remV, main.getMidVersion()); i++) {//I discard all version major of midVersion
+			for (int i = addV; i <= Math.min(remV, midVersion); i++) {//I discard all version major of midVersion
 				if (!(injV == -1 && lastAV == -1) && i >= Math.max(addV, injV) && i <= Math.min(remV, lastAV)) {// class is never buggy
 					CSVEntry entry = new CSVEntry();
 					entry.setBuggy(yes);
@@ -279,7 +279,7 @@ public class FirstMileController {
 		}
 		List<FileWithInfo> fileList = firstMileController.retrieveAllFiles();
 		firstMileController.addInfoToFileList(ticketList, fileList);
-		List<CSVEntry> entryList = firstMileController.createCSVEntryList(fileList, firstMileController);
+		List<CSVEntry> entryList = firstMileController.createCSVEntryList(fileList, firstMileController.getMidVersion());
 		// compute the metrics
 		SortedMap<Integer, List<String>> versionCommitsMap = Metrics
 				.listAllCommitsPerVersion(firstMileController.getSubPath().toUpperCase(), firstMileController.getMidVersion());

@@ -71,7 +71,7 @@ public class GitQuery {// Singleton
 			Thread.currentThread().interrupt();
 			System.exit(-1);
 		}
-		return tkt;
+		return tkt;// date of fix commit related to a ticket
 	}
 
 	public List<String> listCommits(String key) {
@@ -98,7 +98,7 @@ public class GitQuery {// Singleton
 
 	public List<String> listFiles(String commit) {
 		List<String> fileList = new ArrayList<>();
-		try {
+		try {// list file related to the commit
 			// First line represent the last commit date related to the ticket
 			String pathComplete = this.path + PATH_DEL + this.subPath;
 			Process p = Runtime.getRuntime().exec(
@@ -245,9 +245,9 @@ public class GitQuery {// Singleton
 	}
 
 	public List<String> gitDiff(String commitBefore, String commitAfter) {
+		//return a lies of filename, added lines and removed lines, in diff between two commits
 		List<String> filesPlusAttrList = new ArrayList<>();
 		try {
-			// First line represent the last commit date related to the ticket
 			String pathComplete = this.path + PATH_DEL + this.subPath;
 			Process p = Runtime.getRuntime().exec(
 					CMD + pathComplete + " --no-pager diff --numstat " + commitBefore + " " + commitAfter + " *.java");
@@ -310,18 +310,5 @@ public class GitQuery {// Singleton
 			logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
 			Thread.currentThread().interrupt();
 		}
-
 	}
-
-//	public static void main(String[] args) {
-//		try {
-//			System.out.println(GitQuery.Create("C:\\Users\\Giuseppe\\Desktop\\bookkeeper", "bookkeeper", "https://github.com/apache/bookkeeper.git",null).logFilter("BOOKKEEPER-142:"));
-//			String comm = GitQuery.GetInstance().listCommits("BOOKKEEPER-142:").get(0);
-//			String file = GitQuery.GetInstance().listFiles(comm).get(0);
-//			String date = GitQuery.GetInstance().retrieveDate(file, "A");
-//			System.out.println(comm + " " + file + " " + date);		
-//		} catch (InstantiationException e) {
-//			e.printStackTrace();
-//		}
-//	}
 }

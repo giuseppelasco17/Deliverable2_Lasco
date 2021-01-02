@@ -177,12 +177,5 @@ public class Utilities {
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, EXCEPTION_THROWN, e);
 		}
-	}
-
-//	public static void main(String[] args) {
-//		System.out.println(Utilities.getIdVersionFromDate("BOOKKEEPER", "2011-12-08"));
-//		System.out.println(Utilities.getIdVersionFromVersion("BOOKKEEPER", "4.3.3"));
-//		System.out.println(Utilities.getLastVersion("BOOKKEEPER"));
-//	}
-	 
+	}	 
 }

@@ -120,36 +120,4 @@ public class CSVEntry {
 	public void setMaxChgSet(Double maxChgSet) {
 		this.maxChgSet = maxChgSet;
 	}
-
-//	public static void main(String[] args) {
-//		List<CSVEntry> l = new ArrayList<>();
-//		CSVEntry a = new CSVEntry();
-//		a.setVersion(12);
-//		CSVEntry b = new CSVEntry();
-//		b.setVersion(1);
-//		CSVEntry c = new CSVEntry();
-//		c.setVersion(2);
-//		CSVEntry d = new CSVEntry();
-//		d.setVersion(1);
-//		CSVEntry e = new CSVEntry();
-//		e.setVersion(2);
-//		l.add(a);
-//		l.add(b);
-//		l.add(c);
-//		l.add(d);
-//		l.add(e);
-//		for(CSVEntry i : l) {
-//			System.out.println(i.getVersion());
-//		}
-//		Collections.sort(l, new Comparator<CSVEntry>() {
-//		    @Override
-//		    public int compare(CSVEntry o1, CSVEntry o2) {
-//		        return o1.getVersion().compareTo(o2.getVersion());
-//		    }
-//		});
-//		System.out.println("Sorted");
-//		for(CSVEntry i : l) {
-//			System.out.println(i.getVersion());
-//		}
-//	}
 }

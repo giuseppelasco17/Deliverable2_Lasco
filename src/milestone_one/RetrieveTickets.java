@@ -82,7 +82,8 @@ public class RetrieveTickets {
 			tkt.setInjVersion(iV);
 			if (!(iV >= fV || oV >= fV || discardFlag || oV < iV || iV > midVersion)) {// not valid values
 				Proportion.getIstance().calcProportion(fV, oV, iV);// if IV exist, calculate proportion
-			} else if (!discardFlag && iV > oV && iV < fV) {
+			} else if (!discardFlag && iV > oV && iV < fV) {// invalid value of IV, but valid OV and FV, i keep the ticket, but i don't use
+				//it for proportion
 				//in this case is like continue
 			} else {
 				discardFlag = true;
@@ -111,7 +112,7 @@ public class RetrieveTickets {
 		if (!fixVersions.isEmpty()) {// check fixVersion field
 			String fixVersion = fixVersions.getJSONObject(0).get("name").toString();
 			fV = Utilities.getIdVersionFromVersion(projName, fixVersion);
-			if (fV == -1) {
+			if (fV == -1) {// if not valid version
 				discardFlag = true;
 			}
 			tkt.setFixedVersion(fV);
@@ -125,7 +126,7 @@ public class RetrieveTickets {
   
 	private boolean othersCheckForFixedVersion(String key, int[] buggyWindowVersions, boolean discardFlag, String resDate, Ticket tkt) throws InstantiationException {
 		int fV = buggyWindowVersions[0];
-		String fixDate = GitQuery.getInstance().logFilter(key);
+		String fixDate = GitQuery.getInstance().logFilter(key);// last commit date from ticket id
 		if (fixDate != null) {// check if there is a commit
 			fV = Utilities.getIdVersionFromDate(projName, fixDate);
 			if (fV == -1) {

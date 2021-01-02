@@ -96,7 +96,7 @@ public class SecondMileController {
 		entry.setTrueNegative(String.valueOf(evaluation.numTrueNegatives(1)));
 		entry.setFalsePositive(String.valueOf(evaluation.numFalsePositives(1)));
 		entry.setFalseNegative(String.valueOf(evaluation.numFalseNegatives(1)));
-		entry.setPrecision(String.valueOf(evaluation.weightedPrecision()));//TODO:controllare che sia weighted oppure no
+		entry.setPrecision(String.valueOf(evaluation.weightedPrecision()));
 		entry.setRecall(String.valueOf(evaluation.weightedRecall()));
 		entry.setRocArea(String.valueOf(evaluation.weightedAreaUnderROC()));
 		entry.setKappa(String.valueOf(evaluation.kappa()));
@@ -128,13 +128,13 @@ public class SecondMileController {
 			int numYes = occurrences[0];
 			int numNo = occurrences[1];
 			int majority = Math.max(numYes, numNo);
-			double majorPerc = ((float) majority / (float) training.numInstances()) * 100.0 * 2;// Y, the option to pass
+			double majorPerc = ((float) majority / (float) training.numInstances()) * 100.0 * 2.0;// Y, the option to pass
 																								// to the filter. It is
 																								// the
 																								// majority class
 																								// occurrence * 2
-			sampler = new Resample();// sampling tecnique
-			String[] optsOver = new String[] { "-B", "1.0", "-Z", (String.valueOf(majorPerc))};
+			sampler = new Resample();// sampling tecnique, "-no-replacement" in optsOver have issues
+			String[] optsOver = new String[] {"-B", "1.0", "-Z", (String.valueOf(majorPerc))};
 			try {
 				sampler.setOptions(optsOver);
 				sampler.setInputFormat(training);
@@ -224,12 +224,7 @@ public class SecondMileController {
 		if (evaluation == null) {
 			throw new InvalidWekaTecniqueException("Evaluation is null");
 		}
-		return setEntry(k, training, testing, samTecnique, fSTecnique, classifier, evaluation);// TODO: ha
-																											// senso
-																											// computare
-																											// percentuali
-																											// dopo
-																											// sampling??
+		return setEntry(k, training, testing, samTecnique, fSTecnique, classifier, evaluation);
 	}
 
 	public List<ResultEntry> analyzeDataset() throws InvalidWekaTecniqueException {

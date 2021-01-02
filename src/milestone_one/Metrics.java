@@ -135,20 +135,4 @@ public class Metrics {
 			entry.setMaxChgSet(noOfFiles);
 		}
 	}
-
-//	public static void main(String[] args) {
-//		try {
-//			GitQuery.Create("C:\\Users\\Giuseppe\\Desktop\\bookkeeper", "bookkeeper", "https://github.com/apache/bookkeeper.git",null);
-//			//List<String> commits = GitQuery.GetInstance().listAllCommitsWithDates();
-//			//System.out.println(commits.toString());
-//			//List<String> files = GitQuery.GetInstance().gitDiff("e988271acee2c217209d5c7f52c07f6211257e97", "30c326643938bb3df6b35515e714622d98772352");
-//			//System.out.println(files.toString());
-//			//System.out.println(files.get(0).split("\t")[0] + ", " + files.get(0).split("\t")[1] + ", " + files.get(0).split("\t")[2]);
-//			//listAllCommitsPerVersion("BOOKKEEPER");
-//			//TreeMap<Integer,List<String>> versionCommitsMap = listAllCommitsPerVersion("BOOKKEEPER");
-//			//List<CSVEntry> csvEntryList = computeMetrics(versionCommitsMap);
-//		} catch (InstantiationException e) {
-//			e.printStackTrace();
-//		}
-//	}
 }
