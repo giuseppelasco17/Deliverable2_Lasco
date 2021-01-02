@@ -1,7 +1,8 @@
 # Deliverable 2
 [![Build Status](https://travis-ci.org/giuseppelasco17/Deliverable2_Lasco.svg?branch=master)](https://travis-ci.org/giuseppelasco17/Deliverable2_Lasco)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=giuseppelasco17_Deliverable2_Lasco&metric=alert_status)](https://sonarcloud.io/dashboard?id=giuseppelasco17_Deliverable2_Lasco)
-##Breve manuale d'uso
+
+## Breve manuale d'uso
 Il programma legge le informazioni di configurazione dal file `/Deliverable2_Lasco/config.txt`.
 
 La prima riga rappresenta il percorso in cui risiede il progetto da analizzare
